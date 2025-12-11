@@ -2,65 +2,79 @@
 
 import { motion } from 'framer-motion'
 import { Button } from './ui/button'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 to-background py-20">
-      <div className="container mx-auto px-4">
+    <section className="relative overflow-hidden bg-background">
+      {/* Full-width hero with centered content */}
+      <div className="relative min-h-[85vh] flex items-center justify-center">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col items-center text-center"
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="container mx-auto px-6 lg:px-8 flex flex-col items-center text-center z-10"
         >
-          <div className="mb-4 inline-flex items-center rounded-full border px-4 py-1.5 text-sm">
-            <Sparkles className="mr-2 h-4 w-4 text-primary" />
-            AI-Powered Recommendations
-          </div>
-
-          <h1 className="mb-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-            Discover Products{' '}
-            <span className="text-primary">Tailored Just for You</span>
+          {/* Main headline - Apple/Nike style */}
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 leading-tight">
+            Discover.
+            <br />
+            <span className="text-foreground/60">Personalized.</span>
           </h1>
 
-          <p className="mb-8 max-w-2xl text-lg text-muted-foreground">
-            Experience shopping like never before with our advanced AI recommendation engine.
-            Get personalized product suggestions based on your preferences and behavior.
+          <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mb-12 font-light">
+            AI-powered recommendations that understand you.
+            <br className="hidden sm:block" />
+            Every product, curated for your style.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button size="lg" className="group">
-              Explore Products
+          {/* CTA Buttons - Minimal style */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-16">
+            <Button 
+              size="lg" 
+              className="rounded-full px-8 py-6 text-base font-medium bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 group"
+            >
+              Shop Now
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
-            <Button size="lg" variant="outline">
-              View Recommendations
+            <Button 
+              size="lg" 
+              variant="ghost"
+              className="rounded-full px-8 py-6 text-base font-medium hover:bg-foreground/5 transition-all duration-300"
+            >
+              Learn More
             </Button>
           </div>
 
-          {/* Stats */}
-          <div className="mt-16 grid grid-cols-3 gap-8">
-            <div>
-              <div className="text-3xl font-bold text-primary">100+</div>
-              <div className="text-sm text-muted-foreground">Products</div>
+          {/* Minimal stats with dividers */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="flex items-center gap-8 sm:gap-12 text-sm sm:text-base"
+          >
+            <div className="flex flex-col items-center">
+              <div className="text-2xl sm:text-3xl font-semibold mb-1">100+</div>
+              <div className="text-muted-foreground font-light">Products</div>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-primary">95%</div>
-              <div className="text-sm text-muted-foreground">Accuracy</div>
+            <div className="h-12 w-px bg-border" />
+            <div className="flex flex-col items-center">
+              <div className="text-2xl sm:text-3xl font-semibold mb-1">95%</div>
+              <div className="text-muted-foreground font-light">Accuracy</div>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-primary">50+</div>
-              <div className="text-sm text-muted-foreground">Happy Users</div>
+            <div className="h-12 w-px bg-border" />
+            <div className="flex flex-col items-center">
+              <div className="text-2xl sm:text-3xl font-semibold mb-1">50+</div>
+              <div className="text-muted-foreground font-light">Users</div>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
-      </div>
 
-      {/* Background decoration */}
-      <div className="absolute inset-0 -z-10 opacity-20">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary rounded-full blur-3xl" />
+        {/* Subtle gradient background */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        </div>
       </div>
     </section>
   )

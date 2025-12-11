@@ -9,9 +9,9 @@ import { apiClient } from '@/lib/api-client'
 interface Product {
   id: number
   name: string
-  price: number
+  price?: number
   category: string
-  image_url: string
+  image_url?: string | null
 }
 
 export function ProductGrid() {
@@ -42,10 +42,10 @@ export function ProductGrid() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {[...Array(8)].map((_, i) => (
           <div key={i} className="space-y-4">
-            <Skeleton className="h-64 w-full" />
+            <Skeleton className="aspect-square w-full rounded-2xl" />
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-1/2" />
           </div>
@@ -56,20 +56,21 @@ export function ProductGrid() {
 
   if (error) {
     return (
-      <div className="text-red-600 p-4 text-center">
-        Error loading products: {error}
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Unable to load products at this time.</p>
+        <p className="text-sm text-muted-foreground/60 mt-2">Please try again later.</p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
       {products.map((product, index) => (
         <motion.div
           key={product.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.05 }}
+          transition={{ delay: index * 0.05, duration: 0.5 }}
         >
           <ProductCard product={product} />
         </motion.div>

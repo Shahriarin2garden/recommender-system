@@ -3,55 +3,78 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ShoppingCart, Heart } from 'lucide-react'
+import { ShoppingBag, Heart } from 'lucide-react'
 import { Button } from './ui/button'
-import { Card, CardContent, CardFooter } from './ui/card'
 
 interface Product {
   id: number
   name: string
-  price: number
+  price?: number
   category: string
-  image_url: string
+  image_url?: string | null
 }
 
 export function ProductCard({ product }: { product: Product }) {
   return (
     <Link href={`/product/${product.id}`}>
-      <Card className="product-card overflow-hidden group cursor-pointer">
-        <div className="relative aspect-square overflow-hidden bg-muted">
-          <Image
-            src={product.image_url}
-            alt={product.name}
-            fill
-            className="object-cover transition-transform group-hover:scale-105"
-          />
+      <div className="group cursor-pointer">
+        {/* Image Container - Clean, borderless */}
+        <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted/30 mb-4">
+          {product.image_url ? (
+            <Image
+              src={product.image_url}
+              alt={product.name}
+              fill
+              className="object-cover transition-all duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted/30">
+              <ShoppingBag className="h-16 w-16 text-muted-foreground/30" />
+            </div>
+          )}
+          
+          {/* Hover overlay with actions */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
+          
+          {/* Wishlist button */}
           <Button
             size="icon"
             variant="secondary"
-            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-full bg-white hover:bg-white shadow-lg"
             onClick={(e) => {
               e.preventDefault()
               // Add to wishlist
             }}
           >
-            <Heart className="h-4 w-4" />
+            <Heart className="h-4 w-4 text-foreground" />
+          </Button>
+
+          {/* Quick add to cart button */}
+          <Button
+            className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-full bg-foreground text-background hover:bg-foreground/90"
+            onClick={(e) => {
+              e.preventDefault()
+              // Add to cart
+            }}
+          >
+            <ShoppingBag className="mr-2 h-4 w-4" />
+            Add to Bag
           </Button>
         </div>
         
-        <CardContent className="p-4">
-          <div className="text-xs text-muted-foreground mb-1">{product.category}</div>
-          <h3 className="font-semibold line-clamp-2 mb-2">{product.name}</h3>
-          <div className="text-xl font-bold text-primary">${product.price.toFixed(2)}</div>
-        </CardContent>
-
-        <CardFooter className="p-4 pt-0">
-          <Button className="w-full" size="sm">
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Add to Cart
-          </Button>
-        </CardFooter>
-      </Card>
+        {/* Product Info - Minimal, clean layout */}
+        <div className="space-y-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-sm line-clamp-2 leading-tight group-hover:text-foreground/70 transition-colors">
+                {product.name}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">{product.category}</p>
+            </div>
+          </div>
+          <div className="text-base font-semibold">${product.price?.toFixed(2) || '0.00'}</div>
+        </div>
+      </div>
     </Link>
   )
 }
