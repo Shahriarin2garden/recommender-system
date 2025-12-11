@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { Button } from './ui/button'
 import { ArrowRight } from 'lucide-react'
 
@@ -9,12 +8,7 @@ export function Hero() {
     <section className="relative overflow-hidden bg-background">
       {/* Full-width hero with centered content */}
       <div className="relative min-h-[85vh] flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="container mx-auto px-6 lg:px-8 flex flex-col items-center text-center z-10"
-        >
+        <div className="container mx-auto px-6 lg:px-8 flex flex-col items-center text-center z-10 animate-fade-in">
           {/* Main headline - Apple/Nike style */}
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 leading-tight">
             Discover.
@@ -47,12 +41,7 @@ export function Hero() {
           </div>
 
           {/* Minimal stats with dividers */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="flex items-center gap-8 sm:gap-12 text-sm sm:text-base"
-          >
+          <div className="flex items-center gap-8 sm:gap-12 text-sm sm:text-base">
             <div className="flex flex-col items-center">
               <div className="text-2xl sm:text-3xl font-semibold mb-1">100+</div>
               <div className="text-muted-foreground font-light">Products</div>
@@ -67,8 +56,8 @@ export function Hero() {
               <div className="text-2xl sm:text-3xl font-semibold mb-1">50+</div>
               <div className="text-muted-foreground font-light">Users</div>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {/* Subtle gradient background */}
         <div className="absolute inset-0 -z-10">

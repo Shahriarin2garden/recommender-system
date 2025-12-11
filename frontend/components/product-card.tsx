@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { ShoppingBag, Heart } from 'lucide-react'
 import { Button } from './ui/button'
 
@@ -25,7 +24,9 @@ export function ProductCard({ product }: { product: Product }) {
               src={product.image_url}
               alt={product.name}
               fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               className="object-cover transition-all duration-500 group-hover:scale-105"
+              loading="lazy"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted/30">
