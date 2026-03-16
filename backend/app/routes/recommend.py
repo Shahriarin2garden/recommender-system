@@ -1,6 +1,6 @@
 """Recommendation router - handles personalized product recommendations."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Body
 from sqlalchemy.orm import Session
 from typing import List
 import json
@@ -8,9 +8,24 @@ import random
 
 from app.database import get_db, cache_get, cache_set
 from app.models import User, Product, Recommendation, Interaction
-from app.schemas import RecommendationResponse, ProductResponse
+from app.schemas import RecommendationResponse, ProductResponse, TrackClickRequest
 
 router = APIRouter()
+
+
+def serialize_product(product: Product) -> dict:
+    return {
+        "id": product.id,
+        "name": product.name,
+        "description": product.description,
+        "category": product.category,
+        "price": product.price,
+        "image_url": product.image_url,
+        "tags": product.tags,
+        "stock_quantity": product.stock_quantity,
+        "is_active": product.is_active,
+        "created_at": str(product.created_at) if product.created_at else None,
+    }
 
 def get_collaborative_recommendations(user_id: int, db: Session, top_n: int = 10):
     """
@@ -27,7 +42,7 @@ def get_collaborative_recommendations(user_id: int, db: Session, top_n: int = 10
             "product_id": p.id,
             "score": random.uniform(0.5, 1.0),
             "rank": idx + 1,
-            "product": p
+            "product": serialize_product(p)
         }
         for idx, p in enumerate(recommendations)
     ]
@@ -53,7 +68,7 @@ def get_content_based_recommendations(product_id: int, db: Session, top_n: int =
             "product_id": p.id,
             "score": random.uniform(0.6, 0.95),
             "rank": idx + 1,
-            "product": p
+            "product": serialize_product(p)
         }
         for idx, p in enumerate(similar_products)
     ]
@@ -78,7 +93,7 @@ async def get_recommendations(
         )
     
     # Try cache first
-    cache_key = f"recommendations:user={user_id}:n={top_n}"
+    cache_key = f"recommendations:v2:user={user_id}:n={top_n}"
     cached = cache_get(cache_key)
     if cached:
         return json.loads(cached)
@@ -94,7 +109,7 @@ async def get_recommendations(
     }
     
     # Cache results
-    cache_set(cache_key, json.dumps(result, default=str), ttl=300)
+    cache_set(cache_key, json.dumps(result), ttl=300)
     
     return result
 
@@ -108,7 +123,7 @@ async def get_similar_products(
     Get similar products based on content similarity.
     Useful for "You may also like" sections.
     """
-    cache_key = f"similar:product={product_id}:n={top_n}"
+    cache_key = f"similar:v2:product={product_id}:n={top_n}"
     cached = cache_get(cache_key)
     if cached:
         return json.loads(cached)
@@ -121,14 +136,15 @@ async def get_similar_products(
         "model_version": "v1.0-content"
     }
     
-    cache_set(cache_key, json.dumps(result, default=str), ttl=600)
+    cache_set(cache_key, json.dumps(result), ttl=600)
     
     return result
 
 @router.post("/track_click")
 async def track_click(
-    user_id: int,
-    product_id: int,
+    payload: TrackClickRequest | None = Body(default=None),
+    user_id: int | None = None,
+    product_id: int | None = None,
     interaction_type: str = "click",
     db: Session = Depends(get_db)
 ):
@@ -136,16 +152,26 @@ async def track_click(
     Track user interaction with a product.
     Used for improving recommendations and A/B testing.
     """
+    resolved_user_id = payload.user_id if payload else user_id
+    resolved_product_id = payload.product_id if payload else product_id
+    resolved_interaction_type = payload.interaction_type if payload else interaction_type
+
+    if resolved_user_id is None or resolved_product_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="user_id and product_id are required"
+        )
+
     interaction = Interaction(
-        user_id=user_id,
-        product_id=product_id,
-        interaction_type=interaction_type
+        user_id=resolved_user_id,
+        product_id=resolved_product_id,
+        interaction_type=resolved_interaction_type
     )
     db.add(interaction)
     db.commit()
     
     # Invalidate recommendation cache for this user
-    cache_key = f"recommendations:user={user_id}:*"
+    cache_key = f"recommendations:user={resolved_user_id}:*"
     # TODO: Implement pattern-based cache invalidation
     
     return {"message": "Interaction tracked successfully"}

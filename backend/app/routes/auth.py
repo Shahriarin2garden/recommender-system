@@ -7,7 +7,9 @@ from datetime import datetime, timedelta
 from typing import Optional
 import jwt
 from passlib.context import CryptContext
+from passlib.exc import UnknownHashError
 import os
+import hashlib
 
 from app.database import get_db
 from app.models import User
@@ -25,7 +27,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except UnknownHashError:
+        return hashlib.sha256(plain_password.encode()).hexdigest() == hashed_password
 
 def get_password_hash(password: str) -> str:
     """Hash a password."""
@@ -116,6 +121,13 @@ async def login(
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    try:
+        pwd_context.verify(form_data.password, user.hashed_password)
+    except UnknownHashError:
+        user.hashed_password = get_password_hash(form_data.password)
+        db.add(user)
+        db.commit()
     
     # Create access token
     access_token = create_access_token(data={"sub": user.id})

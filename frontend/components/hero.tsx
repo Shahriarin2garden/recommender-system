@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Button } from './ui/button'
 import { ArrowRight } from 'lucide-react'
 
@@ -13,7 +14,9 @@ export function Hero() {
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 leading-tight">
             Discover.
             <br />
-            <span className="text-foreground/60">Personalized.</span>
+            <span className="bg-gradient-to-r from-foreground via-foreground/60 to-foreground bg-clip-text text-transparent animate-gradient">
+              Personalized.
+            </span>
           </h1>
 
           <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mb-12 font-light">
@@ -24,19 +27,23 @@ export function Hero() {
 
           {/* CTA Buttons - Minimal style */}
           <div className="flex flex-col sm:flex-row gap-4 mb-16">
-            <Button 
-              size="lg" 
+            <Button
+              asChild
+              size="lg"
               className="rounded-full px-8 py-6 text-base font-medium bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 group"
             >
-              Shop Now
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <Link href="#all-products">
+                Shop Now
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </Button>
-            <Button 
-              size="lg" 
+            <Button
+              asChild
+              size="lg"
               variant="ghost"
               className="rounded-full px-8 py-6 text-base font-medium hover:bg-foreground/5 transition-all duration-300"
             >
-              Learn More
+              <Link href="#recommended-products">Learn More</Link>
             </Button>
           </div>
 

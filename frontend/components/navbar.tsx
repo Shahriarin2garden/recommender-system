@@ -16,30 +16,34 @@ export function Navbar() {
 
         {/* Center Navigation Links */}
         <div className="hidden md:flex items-center space-x-8">
-          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="#all-products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Shop
           </Link>
-          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="#all-products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             New Arrivals
           </Link>
-          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="#recommended-products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Collections
           </Link>
         </div>
 
         {/* Right Side Actions - Minimal Icons */}
         <div className="flex items-center space-x-1">
-          <Button variant="ghost" size="icon" className="hover:bg-transparent">
-            <Search className="h-5 w-5" />
+          <Button variant="ghost" size="icon" asChild className="hover:bg-transparent">
+            <Link href="#all-products" aria-label="Browse products">
+              <Search className="h-5 w-5" />
+            </Link>
           </Button>
           <ThemeToggle />
           <Button variant="ghost" size="icon" asChild className="hover:bg-transparent">
-            <Link href="/dashboard">
+            <Link href="/login">
               <User className="h-5 w-5" />
             </Link>
           </Button>
-          <Button variant="ghost" size="icon" className="hover:bg-transparent">
-            <ShoppingBag className="h-5 w-5" />
+          <Button variant="ghost" size="icon" asChild className="hover:bg-transparent">
+            <Link href="#recommended-products" aria-label="View recommendations">
+              <ShoppingBag className="h-5 w-5" />
+            </Link>
           </Button>
         </div>
       </div>

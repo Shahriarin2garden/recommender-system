@@ -42,10 +42,6 @@ export function ProductCard({ product }: { product: Product }) {
             size="icon"
             variant="secondary"
             className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-full bg-white hover:bg-white shadow-lg"
-            onClick={(e) => {
-              e.preventDefault()
-              // Add to wishlist
-            }}
           >
             <Heart className="h-4 w-4 text-foreground" />
           </Button>
@@ -53,10 +49,6 @@ export function ProductCard({ product }: { product: Product }) {
           {/* Quick add to cart button */}
           <Button
             className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-full bg-foreground text-background hover:bg-foreground/90"
-            onClick={(e) => {
-              e.preventDefault()
-              // Add to cart
-            }}
           >
             <ShoppingBag className="mr-2 h-4 w-4" />
             Add to Bag
