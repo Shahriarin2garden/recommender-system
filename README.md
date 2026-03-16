@@ -6,6 +6,12 @@ A production-ready e-commerce recommendation engine built with modern web techno
 
 This system implements a hybrid recommendation approach combining collaborative filtering and content-based similarity. It is designed for local development, evaluation, and production deployment to cloud infrastructure.
 
+## Demo Screenshot
+
+![Recommender System Demo - Home](Screenshot%202026-03-16%20160610.png)
+
+![Recommender System Demo - Product](Screenshot%202026-03-16%20154049.png)
+
 **Key capabilities:**
 - Real-time product recommendations with Redis caching
 - User authentication and session management (JWT)
