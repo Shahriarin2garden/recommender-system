@@ -29,8 +29,9 @@ export function Hero() {
           <div className="flex flex-col sm:flex-row gap-4 mb-16">
             <Button
               asChild
+              variant="glass"
               size="lg"
-              className="rounded-full px-8 py-6 text-base font-medium bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 group"
+              className="rounded-full px-8 py-6 text-base font-medium transition-all duration-300 group"
             >
               <Link href="#all-products">
                 Shop Now
@@ -40,8 +41,8 @@ export function Hero() {
             <Button
               asChild
               size="lg"
-              variant="ghost"
-              className="rounded-full px-8 py-6 text-base font-medium hover:bg-foreground/5 transition-all duration-300"
+              variant="glass"
+              className="rounded-full px-8 py-6 text-base font-medium transition-all duration-300"
             >
               <Link href="#recommended-products">Learn More</Link>
             </Button>

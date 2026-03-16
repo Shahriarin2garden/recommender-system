@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ShoppingBag, Heart } from 'lucide-react'
 import { Button } from './ui/button'
+import { addToCart } from '@/lib/cart'
 
 interface Product {
   id: number
@@ -14,6 +16,16 @@ interface Product {
 }
 
 export function ProductCard({ product }: { product: Product }) {
+  const [isAdded, setIsAdded] = useState(false)
+
+  const handleAddToCart = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    addToCart(product)
+    setIsAdded(true)
+    setTimeout(() => setIsAdded(false), 1200)
+  }
+
   return (
     <Link href={`/product/${product.id}`}>
       <div className="group cursor-pointer">
@@ -40,18 +52,24 @@ export function ProductCard({ product }: { product: Product }) {
           {/* Wishlist button */}
           <Button
             size="icon"
-            variant="secondary"
+            variant="glass"
             className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-full bg-white hover:bg-white shadow-lg"
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+            }}
           >
             <Heart className="h-4 w-4 text-foreground" />
           </Button>
 
           {/* Quick add to cart button */}
           <Button
-            className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-full bg-foreground text-background hover:bg-foreground/90"
+            variant="glass"
+            className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-full"
+            onClick={handleAddToCart}
           >
             <ShoppingBag className="mr-2 h-4 w-4" />
-            Add to Bag
+            {isAdded ? 'Added' : 'Add to Cart'}
           </Button>
         </div>
         

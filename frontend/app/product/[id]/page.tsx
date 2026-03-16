@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { apiClient } from '@/lib/api-client'
+import { addToCart } from '@/lib/cart'
 
 interface Product {
   id: number
@@ -25,6 +26,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isAdded, setIsAdded] = useState(false)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -75,6 +77,12 @@ export default function ProductPage() {
     )
   }
 
+  const handleAddToCart = () => {
+    addToCart(product)
+    setIsAdded(true)
+    setTimeout(() => setIsAdded(false), 1400)
+  }
+
   return (
     <div className="container mx-auto px-6 lg:px-8 py-8">
       <Link href="/">
@@ -111,12 +119,12 @@ export default function ProductPage() {
 
           <div className="text-2xl font-semibold">${product.price.toFixed(2)}</div>
 
-          {product.description && (
-            <div>
-              <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-muted-foreground">{product.description}</p>
-            </div>
-          )}
+          <div>
+            <h3 className="font-semibold mb-2">Description</h3>
+            <p className="text-muted-foreground">
+              {product.description?.trim() || 'No description available for this product yet.'}
+            </p>
+          </div>
 
           {product.tags && (
             <div>
@@ -124,7 +132,7 @@ export default function ProductPage() {
               <div className="flex flex-wrap gap-2">
                 {product.tags.split(',').map((tag, index) => (
                   <span
-                    key={index}
+                    key={`${product.id}-${tag.trim()}`}
                     className="px-3 py-1 bg-muted rounded-full text-sm"
                   >
                     {tag.trim()}
@@ -147,13 +155,15 @@ export default function ProductPage() {
 
           <div className="flex gap-4">
             <Button 
+              variant="glass"
               className="flex-1"
               disabled={product.stock_quantity === 0}
+              onClick={handleAddToCart}
             >
               <ShoppingBag className="mr-2 h-4 w-4" />
-              Add to Cart
+              {isAdded ? 'Added to Cart' : 'Add to Cart'}
             </Button>
-            <Button variant="outline" size="icon">
+            <Button variant="glass" size="icon">
               <Heart className="h-4 w-4" />
             </Button>
           </div>
