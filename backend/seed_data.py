@@ -52,8 +52,19 @@ def hash_password(password: str) -> str:
        """Hash password using the same algorithm as auth."""
        return pwd_context.hash(password)
 
+import string
+
+def generate_secure_password(length=16):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(random.choice(characters) for _ in range(length))
+
 def seed_data():
     """Seed the database with sample data."""
+    if os.getenv("ENVIRONMENT", "development") != "development":
+        print("ERROR: Seeding data is only allowed in the development environment.")
+        print("Set ENVIRONMENT=development to allow execution.")
+        sys.exit(1)
+        
     db = SessionLocal()
     
     try:
@@ -64,12 +75,15 @@ def seed_data():
         
         print("Seeding database with sample data...")
         
+        default_password = os.getenv("SEED_PASSWORD", generate_secure_password())
+        admin_password = os.getenv("ADMIN_PASSWORD", generate_secure_password())
+        
         # Create sample users
         users = [
             User(
                 email="alice@example.com",
                 username="alice",
-                hashed_password=hash_password("password123"),
+                hashed_password=hash_password(default_password),
                 full_name="Alice Johnson",
                 cohort="A",
                 is_active=True
@@ -77,7 +91,7 @@ def seed_data():
             User(
                 email="bob@example.com",
                 username="bob",
-                hashed_password=hash_password("password123"),
+                hashed_password=hash_password(default_password),
                 full_name="Bob Smith",
                 cohort="B",
                 is_active=True
@@ -85,7 +99,7 @@ def seed_data():
             User(
                 email="charlie@example.com",
                 username="charlie",
-                hashed_password=hash_password("password123"),
+                hashed_password=hash_password(default_password),
                 full_name="Charlie Brown",
                 cohort="A",
                 is_active=True
@@ -93,7 +107,7 @@ def seed_data():
             User(
                 email="admin@example.com",
                 username="admin",
-                hashed_password=hash_password("admin123"),
+                hashed_password=hash_password(admin_password),
                 full_name="Admin User",
                 cohort="A",
                 is_active=True
@@ -182,9 +196,8 @@ def seed_data():
                    category="Sports", price=19.99, stock_quantity=150, tags="bottle,hydration,insulated",
                    image_url="https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400"),
         ]
-
-              for product in products:
-                     product.image_url = build_product_image_url(product.name)
+        for product in products:
+            product.image_url = build_product_image_url(product.name)
         
         db.add_all(products)
         db.commit()
@@ -219,9 +232,9 @@ def seed_data():
         print("Database seeded successfully!")
         print("="*60)
         print("\nTest Accounts:")
-        print("   Email: alice@example.com | Password: password123 (Cohort A)")
-        print("   Email: bob@example.com   | Password: password123 (Cohort B)")
-        print("   Email: admin@example.com | Password: admin123")
+        print(f"   Email: alice@example.com | Password: {default_password} (Cohort A)")
+        print(f"   Email: bob@example.com   | Password: {default_password} (Cohort B)")
+        print(f"   Email: admin@example.com | Password: {admin_password}")
         print("\nProducts: 22 sample products across 5 categories")
         print("Interactions: Sample user activity generated")
         print("\nNext steps:")

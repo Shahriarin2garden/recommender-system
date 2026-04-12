@@ -43,7 +43,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://recommender_user:recommender_pass@postgres:5432/recommender_db
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=your-secret-key-change-in-production
+      - JWT_SECRET=${JWT_SECRET:-secure_jwt_secret_for_local_development_only_12345}
       - ENVIRONMENT=development
     ports:
       - "8000:8000"

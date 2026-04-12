@@ -1,7 +1,8 @@
 """Authentication router - handles user registration and login."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security.utils import get_authorization_scheme_param
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import Optional
@@ -10,6 +11,7 @@ from passlib.context import CryptContext
 from passlib.exc import UnknownHashError
 import os
 import hashlib
+import uuid
 
 from app.database import get_db
 from app.models import User
@@ -19,11 +21,41 @@ router = APIRouter()
 
 # Security configuration
 SECRET_KEY = os.getenv("JWT_SECRET", "your-secret-key-change-in-production")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+
+if ENVIRONMENT != "development":
+    if SECRET_KEY == "your-secret-key-change-in-production" or len(SECRET_KEY) < 32:
+        raise RuntimeError("FATAL: Weak or default JWT_SECRET detected in non-development environment.")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
+# In-memory denylist for revoked tokens (use Redis for production capability)
+revoked_tokens = set()
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+
+class OAuth2PasswordBearerWithCookie(OAuth2PasswordBearer):
+    async def __call__(self, request: Request) -> Optional[str]:
+        # Try authorization header first
+        authorization = request.headers.get("Authorization")
+        if not authorization:
+            # Try cookie
+            authorization = request.cookies.get("access_token")
+            
+        scheme, param = get_authorization_scheme_param(authorization)
+        if not authorization or scheme.lower() != "bearer":
+            if self.auto_error:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Not authenticated",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            else:
+                return None
+        return param
+
+oauth2_scheme = OAuth2PasswordBearerWithCookie(tokenUrl="/api/v1/auth/login")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash."""
@@ -43,7 +75,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
+    to_encode.update({
+        "exp": expire,
+        "jti": str(uuid.uuid4())
+    })
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -59,13 +94,26 @@ async def get_current_user(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
+        jti = payload.get("jti")
+        if jti and jti in revoked_tokens:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has been revoked",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        user_id = payload.get("sub")
         if user_id is None:
             raise credentials_exception
     except jwt.PyJWTError:
         raise credentials_exception
     
-    user = db.query(User).filter(User.id == user_id).first()
+    # Intentionally cast user_id from string to int for db lookup
+    try:
+        db_user_id = int(user_id)
+    except (ValueError, TypeError):
+        raise credentials_exception
+
+    user = db.query(User).filter(User.id == db_user_id).first()
     if user is None:
         raise credentials_exception
     return user
@@ -109,6 +157,7 @@ async def register(
 
 @router.post("/login", response_model=Token)
 async def login(
+    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
@@ -129,8 +178,17 @@ async def login(
         db.add(user)
         db.commit()
     
-    # Create access token
-    access_token = create_access_token(data={"sub": user.id})
+    # Create access token and ensure sub is encoded as string
+    access_token = create_access_token(data={"sub": str(user.id)})
+    
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {access_token}",
+        httponly=True,
+        secure=os.getenv("ENVIRONMENT") == "production",
+        samesite="lax",
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
     
     return {
         "access_token": access_token,
@@ -145,8 +203,23 @@ async def read_users_me(
     return current_user
 
 @router.post("/logout")
-async def logout():
-    """Logout (client should delete token)."""
-    # In a stateless JWT system, logout is handled client-side
-    # For enhanced security, implement token blacklisting with Redis
+async def logout(
+    response: Response,
+    token: str = Depends(oauth2_scheme)
+):
+    """Logout (adds token to denylist and deletes client cookie)."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        jti = payload.get("jti")
+        if jti:
+            revoked_tokens.add(jti)
+    except jwt.PyJWTError:
+        pass # Ignore decoding error here as we're logging out anyway
+        
+    response.delete_cookie(
+        "access_token",
+        httponly=True,
+        secure=os.getenv("ENVIRONMENT") == "production",
+        samesite="lax"
+    )
     return {"message": "Logged out successfully"}

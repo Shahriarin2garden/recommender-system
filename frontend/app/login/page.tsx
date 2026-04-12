@@ -9,8 +9,8 @@ import { apiClient } from '@/lib/api-client'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('alice@example.com')
-  const [password, setPassword] = useState('password123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -20,16 +20,14 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const token = await apiClient.login(email, password)
-      localStorage.setItem('recommender_token', token.access_token)
-
-      const user = await apiClient.getCurrentUser(token.access_token)
-      localStorage.setItem('recommender_user', JSON.stringify(user))
+      await apiClient.login(email, password)
+      await apiClient.getCurrentUser()
 
       router.push('/')
       router.refresh()
     } catch (err: any) {
-      setError(err?.message || 'Login failed. Please verify your credentials.')
+      const errorMessage = err?.response?.data?.detail || err?.message || 'Login failed. Please verify your credentials.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -75,10 +73,12 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-4 text-sm text-muted-foreground">
-            <p>Demo account:</p>
-            <p>alice@example.com / password123</p>
-          </div>
+          {process.env.NEXT_PUBLIC_SHOW_DEMO_CREDENTIALS === 'true' && (
+            <div className="mt-4 text-sm text-muted-foreground bg-muted p-2 rounded">
+              <p className="font-medium mb-1">Demo account:</p>
+              <p>alice@example.com / password123</p>
+            </div>
+          )}
 
           <div className="mt-4 text-sm">
             <Link href="/" className="underline underline-offset-4">
