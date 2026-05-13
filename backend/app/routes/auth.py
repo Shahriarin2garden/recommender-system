@@ -23,11 +23,11 @@ SECRET_KEY = os.getenv("JWT_SECRET")
 
 if not SECRET_KEY:
     if ENVIRONMENT == "development":
-        SECRET_KEY = os.urandom(32).hex()
+        SECRET_KEY = "dev-only-insecure-jwt-secret-not-for-production"
     else:
         raise RuntimeError("FATAL: JWT_SECRET is required in non-development environment.")
 
-if ENVIRONMENT != "development" and len(SECRET_KEY) < 32:
+if ENVIRONMENT != "development" and len(SECRET_KEY) < 64:
     raise RuntimeError("FATAL: Weak JWT_SECRET detected in non-development environment.")
 
 ALGORITHM = "HS256"
