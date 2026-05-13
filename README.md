@@ -103,6 +103,13 @@ This system implements a hybrid recommendation approach combining collaborative 
 
 ### Using Docker Compose (Recommended)
 
+1. Copy and configure environment variables:
+```bash
+cp .env.example .env
+```
+Set `POSTGRES_PASSWORD`, `DATABASE_URL`, and `JWT_SECRET` in `.env`.
+
+2. Start services:
 ```bash
 docker-compose up --build -d
 ```
