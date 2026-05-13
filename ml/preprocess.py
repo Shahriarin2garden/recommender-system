@@ -13,7 +13,7 @@ import random
 # Database connection
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://recommender_user:recommender_pass@localhost:5432/recommender_db"
+    "sqlite:///./recommender.db"
 )
 
 def generate_sample_data():
