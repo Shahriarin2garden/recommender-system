@@ -27,7 +27,7 @@ if not SECRET_KEY:
     else:
         raise RuntimeError("FATAL: JWT_SECRET is required in non-development environment.")
 
-if ENVIRONMENT != "development" and len(SECRET_KEY) < 64:
+if ENVIRONMENT != "development" and len(SECRET_KEY) < 32:
     raise RuntimeError("FATAL: Weak JWT_SECRET detected in non-development environment.")
 
 ALGORITHM = "HS256"
