@@ -8,9 +8,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 import jwt
 from passlib.context import CryptContext
-from passlib.exc import UnknownHashError
 import os
-import hashlib
 import uuid
 
 from app.database import get_db
@@ -20,12 +18,17 @@ from app.schemas import UserCreate, UserLogin, UserResponse, Token
 router = APIRouter()
 
 # Security configuration
-SECRET_KEY = os.getenv("JWT_SECRET", "your-secret-key-change-in-production")
-ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
+SECRET_KEY = os.getenv("JWT_SECRET")
 
-if ENVIRONMENT != "development":
-    if SECRET_KEY == "your-secret-key-change-in-production" or len(SECRET_KEY) < 32:
-        raise RuntimeError("FATAL: Weak or default JWT_SECRET detected in non-development environment.")
+if not SECRET_KEY:
+    if ENVIRONMENT == "development":
+        SECRET_KEY = "dev-only-insecure-jwt-secret-not-for-production"
+    else:
+        raise RuntimeError("FATAL: JWT_SECRET is required in non-development environment.")
+
+if ENVIRONMENT != "development" and len(SECRET_KEY) < 32:
+    raise RuntimeError("FATAL: Weak JWT_SECRET detected in non-development environment.")
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
@@ -59,10 +62,7 @@ oauth2_scheme = OAuth2PasswordBearerWithCookie(tokenUrl="/api/v1/auth/login")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash."""
-    try:
-        return pwd_context.verify(plain_password, hashed_password)
-    except UnknownHashError:
-        return hashlib.sha256(plain_password.encode()).hexdigest() == hashed_password
+    return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password: str) -> str:
     """Hash a password."""
@@ -171,13 +171,6 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    try:
-        pwd_context.verify(form_data.password, user.hashed_password)
-    except UnknownHashError:
-        user.hashed_password = get_password_hash(form_data.password)
-        db.add(user)
-        db.commit()
-    
     # Create access token and ensure sub is encoded as string
     access_token = create_access_token(data={"sub": str(user.id)})
     
