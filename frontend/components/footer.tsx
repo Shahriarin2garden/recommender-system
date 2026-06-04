@@ -3,88 +3,116 @@
 import Link from 'next/link'
 import { Github, Twitter, Mail } from 'lucide-react'
 
+const SHOP_LINKS    = ['All Products', 'New Arrivals', 'Collections']
+const SUPPORT_LINKS = ['Help Center', 'Contact', 'Privacy']
+
 export function Footer() {
   return (
     <footer className="border-t border-border/40 bg-background">
-      <div className="container mx-auto px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          {/* About */}
-          <div>
-            <h3 className="font-semibold text-sm mb-4 tracking-wide">About</h3>
+      <div className="container mx-auto px-6 lg:px-8">
+
+        {/* Top section */}
+        <div className="py-16 grid grid-cols-1 md:grid-cols-[1fr_auto_auto_auto] gap-12 md:gap-16">
+
+          {/* Brand column */}
+          <div className="space-y-4 max-w-xs">
+            <Link href="/" className="text-lg font-bold tracking-tight hover:opacity-70 transition-opacity">
+              Recommend
+            </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              AI-powered shopping experience. Discover products curated just for you.
+              AI-powered shopping experience.
+              <br />
+              Products curated just for you.
             </p>
+            {/* Social icons */}
+            <div className="flex items-center gap-4 pt-2">
+              {[
+                { icon: Github,  href: '#', label: 'GitHub'  },
+                { icon: Twitter, href: '#', label: 'Twitter' },
+                { icon: Mail,    href: '#', label: 'Email'   },
+              ].map(({ icon: Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-200"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
           </div>
 
-          {/* Shop */}
+          {/* Shop column */}
           <div>
-            <h3 className="font-semibold text-sm mb-4 tracking-wide">Shop</h3>
-            <ul className="space-y-3 text-sm">
-              <li>
-                <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">
-                  All Products
-                </Link>
-              </li>
-              <li>
-                <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">
-                  New Arrivals
-                </Link>
-              </li>
-              <li>
-                <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Collections
-                </Link>
-              </li>
+            <h4 className="text-xs font-semibold tracking-widest uppercase text-foreground mb-5">Shop</h4>
+            <ul className="space-y-3">
+              {SHOP_LINKS.map((label) => (
+                <li key={label}>
+                  <Link
+                    href="/"
+                    className="hover-line text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Support column */}
           <div>
-            <h3 className="font-semibold text-sm mb-4 tracking-wide">Support</h3>
-            <ul className="space-y-3 text-sm">
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Help Center
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Contact
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Privacy
-                </a>
-              </li>
+            <h4 className="text-xs font-semibold tracking-widest uppercase text-foreground mb-5">Support</h4>
+            <ul className="space-y-3">
+              {SUPPORT_LINKS.map((label) => (
+                <li key={label}>
+                  <a
+                    href="#"
+                    className="hover-line text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Connect */}
-          <div>
-            <h3 className="font-semibold text-sm mb-4 tracking-wide">Connect</h3>
-            <div className="flex space-x-5">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Github className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Mail className="h-5 w-5" />
-              </a>
+          {/* Newsletter column */}
+          <div className="min-w-[200px]">
+            <h4 className="text-xs font-semibold tracking-widest uppercase text-foreground mb-5">Stay updated</h4>
+            <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+              Get personalized picks in your inbox.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                placeholder="you@email.com"
+                aria-label="Email for newsletter"
+                className="flex-1 min-w-0 h-9 px-3 text-xs bg-muted/40 border border-border/60 rounded-lg outline-none focus:border-foreground/30 transition-colors placeholder:text-muted-foreground/50"
+              />
+              <button className="h-9 px-3 text-xs font-medium bg-foreground text-background rounded-lg hover:bg-foreground/85 transition-colors cursor-pointer">
+                Join
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-border/40 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-          <p>© 2025 Recommend. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="#" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-foreground transition-colors">Cookies</Link>
+        {/* Bottom bar */}
+        <div className="py-6 border-t border-border/40 flex flex-col sm:flex-row justify-between items-center gap-3 text-[11px] text-muted-foreground">
+          <p>© {new Date().getFullYear()} Recommend. All rights reserved.</p>
+          <div className="flex gap-5">
+            {['Terms', 'Privacy', 'Cookies'].map((label) => (
+              <Link
+                key={label}
+                href="#"
+                className="hover:text-foreground transition-colors duration-200"
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
+
       </div>
     </footer>
   )

@@ -36,9 +36,38 @@ export const apiClient = {
   },
 
   getProducts: async () => {
-    // Adjust endpoint based on backend setup, usually /products
-    // Note: The product router might be listed at /products or /products/
-    const response = await axiosInstance.get('/products');
+    const response = await axiosInstance.get('/products/');
+    return response.data;
+  },
+
+  getProduct: async (id: number) => {
+    const response = await axiosInstance.get(`/products/${id}`);
+    return response.data;
+  },
+
+  getRecommendations: async (userId: number, top_n?: number) => {
+    const response = await axiosInstance.get(`/recommend/${userId}`, {
+      params: { top_n }
+    });
+    return response.data;
+  },
+
+  getSimilarProducts: async (productId: number, top_n?: number) => {
+    const response = await axiosInstance.get(`/similar/${productId}`, {
+      params: { top_n }
+    });
+    return response.data;
+  },
+
+  trackClick: async (payload: { user_id: number; product_id: number; interaction_type?: string }) => {
+    const response = await axiosInstance.post('/track_click', payload);
+    return response.data;
+  },
+
+  getABTestResults: async (days?: number) => {
+    const response = await axiosInstance.get('/ab-test/results', {
+      params: { days }
+    });
     return response.data;
   }
 };
