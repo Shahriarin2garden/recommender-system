@@ -1,30 +1,24 @@
-"""
-FastAPI main application entry point for E-commerce Recommender System.
-Handles API routing, middleware, and application lifecycle.
-"""
+"""FastAPI main application entry point for E-commerce Recommender System."""
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 import time
 import logging
+import os
 
 from app.routes import products, recommend, auth, ab_test
 from app.database import engine, Base
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# Create database tables
 Base.metadata.create_all(bind=engine)
 
-# Initialize FastAPI app
 app = FastAPI(
     title="E-commerce Recommender API",
     description="Production-grade recommendation system with hybrid ML models",
@@ -33,36 +27,32 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS middleware configuration
+# Allow localhost dev + any Vercel deployment + custom domain via env var
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+]
+frontend_url = os.getenv("FRONTEND_URL", "")
+if frontend_url:
+    ALLOWED_ORIGINS.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "https://yourdomain.com"
-    ],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Trusted host middleware
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=["localhost", "127.0.0.1", "*.yourdomain.com"]
-)
-
-# Custom middleware for request timing
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(process_time)
-    logger.info(f"{request.method} {request.url.path} - {process_time:.3f}s")
     return response
 
-# Exception handlers
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
@@ -78,19 +68,12 @@ async def general_exception_handler(request: Request, exc: Exception):
         content={"detail": "Internal server error"}
     )
 
-# Health check endpoint
 @app.get("/health", tags=["Health"])
 async def health_check():
-    """Health check endpoint for load balancers and monitoring."""
-    return {
-        "status": "healthy",
-        "version": "1.0.0",
-        "timestamp": time.time()
-    }
+    return {"status": "healthy", "version": "1.0.0", "timestamp": time.time()}
 
 @app.get("/", tags=["Root"])
 async def root():
-    """Root endpoint with API information."""
     return {
         "message": "E-commerce Recommender API",
         "version": "1.0.0",
@@ -98,35 +81,46 @@ async def root():
         "health": "/health"
     }
 
-# Include routers
 app.include_router(products.router, prefix="/api/v1", tags=["Products"])
 app.include_router(recommend.router, prefix="/api/v1", tags=["Recommendations"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(ab_test.router, prefix="/api/v1/ab-test", tags=["A/B Testing"])
 
-# Startup event
 @app.on_event("startup")
 async def startup_event():
     logger.info("Starting E-commerce Recommender API...")
-    logger.info("Database tables created successfully")
-    # TODO: Initialize Redis connection pool
-    # TODO: Load ML model into memory
+    _auto_seed_and_train()
     logger.info("API ready to accept requests")
 
-# Shutdown event
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Shutting down E-commerce Recommender API...")
-    # TODO: Close database connections
-    # TODO: Close Redis connections
-    logger.info("Cleanup completed")
+def _auto_seed_and_train():
+    """Seed DB and train ML model if not already done."""
+    try:
+        from app.database import SessionLocal
+        from app.models import User, Product
+        db = SessionLocal()
+        user_count = db.query(User).count()
+        product_count = db.query(Product).count()
+        db.close()
+
+        if user_count == 0 or product_count == 0:
+            logger.info("Empty database detected — running seed...")
+            import subprocess, sys
+            seed_path = os.path.join(os.path.dirname(__file__), '..', 'seed_data.py')
+            subprocess.run([sys.executable, seed_path], check=True)
+            logger.info("Seed complete.")
+
+        # Train ML model if artifacts missing
+        ml_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'ml')
+        model_path = os.path.join(ml_dir, 'model.pkl')
+        if not os.path.exists(model_path):
+            logger.info("ML model not found — training...")
+            import subprocess, sys
+            train_path = os.path.join(os.path.dirname(__file__), '..', 'train_model.py')
+            subprocess.run([sys.executable, train_path], check=True)
+            logger.info("Training complete.")
+    except Exception as e:
+        logger.warning(f"Startup seed/train skipped: {e}")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

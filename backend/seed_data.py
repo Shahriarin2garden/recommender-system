@@ -18,10 +18,9 @@ from datetime import datetime, timedelta
 Base.metadata.create_all(bind=engine)
 
 def hash_password(password: str) -> str:
-    """Simple hash function for demo purposes."""
-    # In production, use proper bcrypt. For demo, just use a simple hash
-    import hashlib
-    return hashlib.sha256(password.encode()).hexdigest()
+    """Hash password with bcrypt."""
+    import bcrypt
+    return bcrypt.hashpw(password[:72].encode(), bcrypt.gensalt()).decode()
 
 def seed_data():
     """Seed the database with sample data."""
