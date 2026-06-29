@@ -94,17 +94,18 @@ def train_ml_model():
         
         # Save models
         print("\n💾 Saving models...")
-        os.makedirs('/app/ml', exist_ok=True)
-        
-        joblib.dump(model, '/app/ml/model.pkl')
-        joblib.dump(vectorizer, '/app/ml/vectorizer.pkl')
-        np.save('/app/ml/product_similarity.npy', product_similarity)
-        np.save('/app/ml/user_item_matrix.npy', user_item_matrix)
-        
-        print("✓ Model saved: /app/ml/model.pkl")
-        print("✓ Vectorizer saved: /app/ml/vectorizer.pkl")
-        print("✓ Product similarity saved: /app/ml/product_similarity.npy")
-        print("✓ User-item matrix saved: /app/ml/user_item_matrix.npy")
+        ml_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ml')
+        os.makedirs(ml_dir, exist_ok=True)
+
+        joblib.dump(model, os.path.join(ml_dir, 'model.pkl'))
+        joblib.dump(vectorizer, os.path.join(ml_dir, 'vectorizer.pkl'))
+        np.save(os.path.join(ml_dir, 'product_similarity.npy'), product_similarity)
+        np.save(os.path.join(ml_dir, 'user_item_matrix.npy'), user_item_matrix)
+
+        print(f"✓ Model saved: {ml_dir}/model.pkl")
+        print(f"✓ Vectorizer saved: {ml_dir}/vectorizer.pkl")
+        print(f"✓ Product similarity saved: {ml_dir}/product_similarity.npy")
+        print(f"✓ User-item matrix saved: {ml_dir}/user_item_matrix.npy")
         
         # Test recommendations
         print("\n🧪 Testing recommendations...")

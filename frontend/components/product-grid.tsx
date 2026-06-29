@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ProductCard } from './product-card'
 import { Skeleton } from './ui/skeleton'
-import { apiClient } from '@/lib/api-client'
+import { apiClient } from '../lib/api-client'
 
 interface Product {
   id: number

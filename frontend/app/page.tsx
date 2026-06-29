@@ -1,6 +1,6 @@
 import { Hero } from '@/components/hero'
 import { ProductGrid } from '@/components/product-grid'
-import { RecommendationSection } from '@/lib/recommendation-section'
+import { RecommendationSection } from '@/components/recommendation-section'
 
 export default function Home() {
   return (
