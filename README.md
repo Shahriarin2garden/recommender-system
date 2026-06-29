@@ -6,6 +6,12 @@ A production-ready e-commerce recommendation engine built with modern web techno
 
 This system implements a hybrid recommendation approach combining collaborative filtering and content-based similarity. It is designed for local development, evaluation, and production deployment to cloud infrastructure.
 
+## Demo Screenshot
+
+![Recommender System Demo - Home](Screenshot%202026-03-16%20160610.png)
+
+![Recommender System Demo - Product](Screenshot%202026-03-16%20154049.png)
+
 **Key capabilities:**
 - Real-time product recommendations with Redis caching
 - User authentication and session management (JWT)
@@ -97,6 +103,13 @@ This system implements a hybrid recommendation approach combining collaborative 
 
 ### Using Docker Compose (Recommended)
 
+1. Copy and configure environment variables:
+```bash
+cp .env.example .env
+```
+Set `POSTGRES_PASSWORD`, `DATABASE_URL`, and `JWT_SECRET` in `.env`.
+
+2. Start services:
 ```bash
 docker-compose up --build -d
 ```
@@ -147,8 +160,8 @@ Create `.env` files in `backend/` and `frontend/` directories (not tracked by gi
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/recommender
 REDIS_URL=redis://localhost:6379
-JWT_SECRET=your-secret-key-change-in-production
-ENVIRONMENT=development
+JWT_SECRET=<YOUR_SECRET_AT_LEAST_32_CHARS_LONG>
+ENVIRONMENT=production
 ```
 
 **`frontend/.env.local`:**
@@ -256,7 +269,21 @@ docker-compose build --no-cache
 | Database connection failed     | Verify `DATABASE_URL` in `.env` and database is running |
 | ML model file not found        | Run `python backend/seed_data.py` to initialize |
 | Node modules issues            | Delete `node_modules/` and `package-lock.json`, then `npm install` |
+| Node modules issues            | Delete `node_modules/` and `package-lock.json`, then `npm install` |
 | Python import errors           | Verify virtualenv is activated and packages are installed |
+
+## Security Best Practices
+
+### Production Security Quickstart
+1. **JWT Secret:** Generate a strong random secret (`openssl rand -hex 32`) and set it as `JWT_SECRET` in your `.env` (at least 32 characters; 64 hex characters recommended).
+2. **Cookies:** The application relies on HttpOnly cookies. Ensure your production environment uses HTTPS, or the `Secure` flag on cookies will prevent logins.
+3. **Seed Data:** Do NOT run `seed_data.py` in production; it is restricted to `ENVIRONMENT=development` and uses randomly generated passwords.
+4. **Database Credentials:** Restrict PostgreSQL and Redis with strong, automatically-rotated credentials when deploying to the cloud.
+
+### Incident Response
+- **Secret Compromise:** Rotate `JWT_SECRET` immediately. This will invalidate all newly-issued tokens but current sessions might remain active depending on the payload.
+- **Session Revocation:** For active sessions, individual users logouts are tracked via an in-memory denylist (or Redis). In emergencies, bounce the backend service (if using in-memory) or clear the Redis cache to forcefully reset all sessions.
+- **Infrastructure Compromise:** Rotate DB, Redis passwords, and redeploy containers.
 
 ## Contributing
 

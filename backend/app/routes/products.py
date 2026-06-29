@@ -11,6 +11,21 @@ from app.schemas import ProductResponse, ProductCreate, ProductUpdate
 
 router = APIRouter()
 
+
+def serialize_product(product: Product) -> dict:
+    return {
+        "id": product.id,
+        "name": product.name,
+        "description": product.description,
+        "category": product.category,
+        "price": product.price,
+        "image_url": product.image_url,
+        "tags": product.tags,
+        "stock_quantity": product.stock_quantity,
+        "is_active": product.is_active,
+        "created_at": str(product.created_at) if product.created_at else None,
+    }
+
 @router.get("/products/", response_model=List[ProductResponse])
 async def get_products(
     skip: int = Query(0, ge=0),
@@ -23,7 +38,7 @@ async def get_products(
     Results are cached in Redis for 5 minutes.
     """
     # Build cache key
-    cache_key = f"products:skip={skip}:limit={limit}:category={category}"
+    cache_key = f"products:v2:skip={skip}:limit={limit}:category={category}"
     
     # Try cache first
     cached = cache_get(cache_key)
@@ -38,7 +53,7 @@ async def get_products(
     products = query.offset(skip).limit(limit).all()
     
     # Cache results
-    cache_set(cache_key, json.dumps([p.__dict__ for p in products], default=str))
+    cache_set(cache_key, json.dumps([serialize_product(p) for p in products]))
     
     return products
 
@@ -49,7 +64,7 @@ async def get_product(
 ):
     """Get detailed information about a specific product."""
     # Try cache first
-    cache_key = f"product:{product_id}"
+    cache_key = f"product:v2:{product_id}"
     cached = cache_get(cache_key)
     if cached:
         return json.loads(cached)
@@ -63,7 +78,7 @@ async def get_product(
         )
     
     # Cache result
-    cache_set(cache_key, json.dumps(product.__dict__, default=str))
+    cache_set(cache_key, json.dumps(serialize_product(product)))
     
     return product
 

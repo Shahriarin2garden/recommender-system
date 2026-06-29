@@ -113,6 +113,11 @@ class RecommendationList(BaseModel):
     model_version: str
     generated_at: datetime
 
+class TrackClickRequest(BaseModel):
+    user_id: int
+    product_id: int
+    interaction_type: str = Field(default="click", pattern="^(view|click|purchase|rating)$")
+
 # ============================================================================
 # A/B Test Schemas
 # ============================================================================
