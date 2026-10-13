@@ -17,7 +17,6 @@ downloads/
 eggs/
 .eggs/
 lib64/
-# lib/  # Python build artifact — do NOT ignore frontend/lib/
 parts/
 sdist/
 var/
@@ -26,8 +25,12 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
-# *.pkl  # committed for production deployment
-# *.npy  # committed for production deployment
+
+# ML artifacts
+ml/models/*.pkl
+ml/models/*.npy
+ml/models/*.joblib
+!ml/models/.gitkeep
 
 # Virtual environments
 venv/

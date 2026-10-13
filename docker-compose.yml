@@ -1,7 +1,4 @@
-version: '3.8'
-
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: recommender-postgres
@@ -10,21 +7,20 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-recommender_db}
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U recommender_user"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Redis Cache
   redis:
     image: redis:7-alpine
     container_name: recommender-redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -34,19 +30,24 @@ services:
       timeout: 5s
       retries: 5
 
-  # FastAPI Backend
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: recommender-backend
     environment:
-      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL is required}
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
-      - ENVIRONMENT=development
+      DATABASE_URL: ${DATABASE_URL:-postgresql://recommender_user:change_me@postgres:5432/recommender_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      JWT_SECRET: ${JWT_SECRET:-change_this_to_a_32_character_or_longer_secret}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      ALLOW_SEED: ${ALLOW_SEED:-true}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      ROOT_PATH: ${ROOT_PATH:-}
+      MODEL_PATH: ${MODEL_PATH:-/app/ml/models}
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -54,19 +55,21 @@ services:
         condition: service_healthy
     volumes:
       - ./backend/app:/app/app
+      - ./backend:/app
       - ./ml:/app/ml
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-  # Next.js Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     container_name: recommender-frontend
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     ports:
-      - "3001:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       - backend
     volumes:

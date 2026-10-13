@@ -1,263 +1,163 @@
 # Recommender System
 
-A production-ready e-commerce recommendation engine built with modern web technologies and ML. This repository provides a complete MVP scaffold with a Next.js frontend, FastAPI backend, PostgreSQL/Redis persistence, and an ML training pipeline.
+This project is a small e-commerce recommendation stack built with FastAPI, Next.js 14, PostgreSQL, Redis, and a lightweight ML recommendation fallback. It is designed to run locally with Docker Compose and to deploy behind a single nginx frontend for production.
 
 ## Overview
 
-This system implements a hybrid recommendation approach combining collaborative filtering and content-based similarity. It is designed for local development, evaluation, and production deployment to cloud infrastructure.
-
-## Demo Screenshot
-
-![Recommender System Demo - Home](Screenshot%202026-03-16%20160610.png)
-
-![Recommender System Demo - Product](Screenshot%202026-03-16%20154049.png)
-
-**Key capabilities:**
-- Real-time product recommendations with Redis caching
-- User authentication and session management (JWT)
-- A/B testing framework for experimentation
-- Interaction tracking and analytics
-- Containerized architecture (Docker Compose)
+The backend provides product listings, auth, recommendation endpoints, and health checks. The frontend is a Next.js app that calls the backend over either an absolute URL or a relative `/api` base. In development, the app uses local Docker services. In production, the backend is served behind nginx with `/api` stripped at the proxy layer.
 
 ## Architecture
 
 ```text
-┌─────────────────┐
-│  Next.js (UI)   │
-└────────┬────────┘
-         │ HTTP
-┌────────▼──────────────┐
-│ FastAPI (REST API)    │
-└────────┬──────────────┘
-         │ SQL / Cache
-┌────────▼──────────────────────────────┐
-│ PostgreSQL | Redis | ML Model         │
-└───────────────────────────────────────┘
+Browser
+  -> nginx (single origin) or localhost:3000
+  -> Next.js frontend
+  -> FastAPI backend on /api
+  -> PostgreSQL + Redis + ML artifacts
 ```
 
-## Technology Stack
+## Run locally
 
-| Component  | Technology                          |
-| ---------- | ----------------------------------- |
-| Frontend   | Next.js 14, TailwindCSS, shadcn/ui |
-| Backend    | FastAPI, Python 3.11+, Uvicorn    |
-| Database   | PostgreSQL, Redis                  |
-| ML         | scikit-learn, PyTorch              |
-| DevOps     | Docker, Docker Compose             |
-| Security   | JWT, bcrypt, input validation      |
+### Docker Compose
 
-## Project Structure
+1. Copy the root sample environment file:
 
-```text
-.
-├── backend/                    # FastAPI service
-│   ├── app/
-│   │   ├── main.py            # Application entry point
-│   │   ├── database.py        # Database setup
-│   │   ├── models.py          # SQLAlchemy models
-│   │   ├── schemas.py         # Pydantic schemas
-│   │   ├── routes/            # API endpoints
-│   │   │   ├── auth.py
-│   │   │   ├── products.py
-│   │   │   ├── recommend.py
-│   │   │   └── ab_test.py
-│   ├── requirements.txt
-│   ├── requirements-local.txt
-│   ├── seed_data.py           # Database seeding
-│   └── Dockerfile
-│
-├── frontend/                   # Next.js application
-│   ├── app/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   ├── admin/
-│   │   └── providers.tsx
-│   ├── components/
-│   │   ├── product-grid.tsx
-│   │   ├── recommendation-section.tsx
-│   │   └── ui/
-│   ├── lib/
-│   │   ├── api-client.ts
-│   │   └── utils.ts
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── Dockerfile
-│
-├── ml/                        # Machine learning pipeline
-│   ├── train_model.ipynb      # Training notebook
-│   ├── preprocess.py          # Data preprocessing
-│   ├── utils.py
-│   └── requirements.txt
-│
-├── docker-compose.yml         # Multi-container orchestration
-├── LICENSE
-└── README.md
-```
-
-## Quick Start
-
-### Prerequisites
-
-- Docker & Docker Compose, or
-- Node.js 18+, Python 3.11+, PostgreSQL, Redis (for local development)
-
-### Using Docker Compose (Recommended)
-
-1. Copy and configure environment variables:
 ```bash
 cp .env.example .env
 ```
-Set `POSTGRES_PASSWORD`, `DATABASE_URL`, and `JWT_SECRET` in `.env`.
 
-2. Start services:
+2. Update the generated values in `.env` before the first run. The defaults are safe for local Docker use and will point to the `postgres` and `redis` service names inside Compose.
+
+3. Start everything:
+
 ```bash
-docker-compose up --build -d
+docker compose up --build
 ```
 
-Then access the application:
+Then open:
 
-- **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:8000
-- **API Documentation:** http://localhost:8000/docs
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000
+- API docs: http://localhost:8000/docs
+- Health: http://localhost:8000/health
 
-### Local Development
+### Local host development without Docker
 
-**Backend setup:**
+Install Python and Node dependencies and run each service directly on your machine:
 
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .\.venv\Scripts\Activate.ps1
+source .venv/bin/activate
 pip install -r requirements-local.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-**Frontend setup:**
-
 ```bash
 cd frontend
 npm install
-npm run dev
+NEXT_PUBLIC_API_URL=http://localhost:8000 npm run dev
 ```
 
-**ML environment:**
-
-```bash
-cd ml
-pip install -r requirements.txt
-python preprocess.py
-jupyter notebook train_model.ipynb
-```
-
-## Configuration
-
-### Environment Variables
-
-Create `.env` files in `backend/` and `frontend/` directories (not tracked by git):
-
-**`backend/.env`:**
-
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/recommender
-REDIS_URL=redis://localhost:6379
-JWT_SECRET=<YOUR_SECRET_AT_LEAST_32_CHARS_LONG>
-ENVIRONMENT=production
-```
-
-**`frontend/.env.local`:**
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_ENABLE_ANALYTICS=true
-```
-
-### Database Setup
-
-Populate development database with sample data:
-
-```bash
-python backend/seed_data.py
-```
-
-## API Reference
-
-View interactive API documentation at `/docs` after starting the backend.
-
-**Common endpoints:**
-
-| Method | Endpoint                | Description                          |
-| ------ | ----------------------- | ------------------------------------ |
-| GET    | `/products/`            | List all products                    |
-| GET    | `/products/{id}`        | Get product details                  |
-| POST   | `/auth/login`           | Authenticate user (returns JWT)      |
-| GET    | `/recommend/{user_id}`  | Get personalized recommendations     |
-| POST   | `/track_click`          | Record user interaction              |
-| GET    | `/ab-test/results`      | Retrieve A/B test metrics            |
-
-**Example request:**
-
-```bash
-curl -X GET "http://localhost:8000/recommend/123"
-```
-
-## Testing
-
-**Backend:**
+If you want to seed demo data:
 
 ```bash
 cd backend
-pytest
+ALLOW_SEED=true ENVIRONMENT=development python seed_data.py
 ```
 
-**Frontend:**
+## Demo ML artifacts
+
+A fresh clone does not include trained model files. The backend will use a deterministic popularity fallback until the model artifacts exist. To generate the minimal demo model artifacts, run:
+
+```bash
+cd ml
+python export_demo_model.py
+```
+
+This creates the files needed under `ml/models` and does not require the notebook.
+
+## Deploy to a single server
+
+Production deployment is handled by `docker-compose.prod.yml` and `deploy/nginx.conf`.
+
+- nginx is the only port published to the host.
+- the frontend is built as a standalone Next.js image.
+- `/api/` is routed to the backend with the `/api` prefix stripped.
+- `/` is routed to the frontend.
+- `/healthz` returns a lightweight 200 status without touching the app.
+
+Example:
+
+```bash
+cp .env.example .env
+# set production values, then
+docker compose -f docker-compose.prod.yml up --build
+```
+
+Then open the host on port 80 or the value of `HTTP_PORT`.
+
+## Environment variables
+
+| Variable | Default | Required in production | Notes |
+| --- | --- | --- | --- |
+| POSTGRES_USER | recommender_user | No | Database username |
+| POSTGRES_PASSWORD | change_me | Yes | Database password |
+| POSTGRES_DB | recommender_db | No | Database name |
+| DATABASE_URL | postgresql://recommender_user:change_me@postgres:5432/recommender_db | Yes | Container DB URL |
+| REDIS_URL | redis://redis:6379 | No | Redis connection URL |
+| JWT_SECRET | change_this_to_a_32_character_or_longer_secret | Yes | Must be at least 32 chars |
+| ENVIRONMENT | development | No | `development` or `production` |
+| FRONTEND_URL | http://localhost:3000 | No | Allowed frontend origin |
+| CORS_ORIGINS | http://localhost:3000,http://127.0.0.1:3000 | No | Comma-separated list of allowed origins |
+| NEXT_PUBLIC_API_URL | http://localhost:8000 | No | Frontend backend URL |
+| MODEL_PATH | ./ml/models | No | ML artifact directory |
+| ALLOW_SEED | true | No | Demo-only seeding override |
+| COOKIE_SECURE | false | No | Force secure cookies in production |
+| ROOT_PATH | empty | No | Reverse proxy prefix such as /api |
+
+## Default demo accounts
+
+- alice@example.com / password123
+- bob@example.com / password123
+- admin@example.com / admin123
+
+## API reference
+
+The backend exposes the following main endpoints:
+
+- GET /health
+- GET /api/v1/products/
+- GET /api/v1/products/{id}
+- POST /api/v1/auth/register
+- POST /api/v1/auth/login
+- GET /api/v1/auth/me
+- GET /api/v1/recommend/{user_id}
+- POST /api/v1/track_click
+
+## Testing
+
+Backend:
+
+```bash
+cd backend
+python -m pytest tests -q
+```
+
+Frontend:
 
 ```bash
 cd frontend
 npm test
+npm run lint
+npm run build
 ```
 
-## Development Workflow
+## Notes
 
-1. Create a feature branch:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. Make changes and test locally
-
-3. Commit with descriptive messages:
-   ```bash
-   git commit -m "feat: add new recommendation algorithm"
-   ```
-
-4. Push and create a pull request:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-## Docker Commands
-
-**Start services:**
-
-```bash
-docker-compose up -d
-```
-
-**Stop services:**
-
-```bash
-docker-compose down
-```
-
-**View logs:**
-
-```bash
-docker-compose logs -f [service-name]
-```
-
-**Rebuild images:**
-
-```bash
+- The project uses a production-safe JSON health check and a graceful Redis fallback.
+- Model artifacts are not committed by default. The demo export script is intended to create them locally for development.
+- No `.env` file is committed. Secrets should remain in the local root `.env` or in the host environment.
 docker-compose build --no-cache
 ```
 
