@@ -1,4 +1,15 @@
-services:
+﻿services:
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - backend
+
   postgres:
     image: postgres:15-alpine
     container_name: recommender-postgres
@@ -46,8 +57,6 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       ROOT_PATH: ${ROOT_PATH:-}
       MODEL_PATH: ${MODEL_PATH:-/app/ml/models}
-    ports:
-      - "127.0.0.1:8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,8 +77,6 @@ services:
     container_name: recommender-frontend
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
-    ports:
-      - "3000:3000"
     depends_on:
       - backend
 
