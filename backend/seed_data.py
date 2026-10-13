@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from app.database import SessionLocal, engine
 from app.models import Base, Interaction, Product, User
+from app.update_product_images import build_product_image_url
 
 Base.metadata.create_all(bind=engine)
 
@@ -67,6 +68,8 @@ def seed_data():
             Product(name="Resistance Bands", description="Set of 5 resistance bands", category="Sports", price=24.99, stock_quantity=110, tags="bands,fitness,resistance"),
             Product(name="Water Bottle", description="Insulated stainless steel water bottle", category="Sports", price=19.99, stock_quantity=150, tags="bottle,hydration,insulated"),
         ]
+        for product in products:
+            product.image_url = build_product_image_url(product.name)
         db.add_all(products)
         db.commit()
 

@@ -13,6 +13,7 @@ from sqlalchemy import text
 
 from app.database import DATABASE_URL, Base, engine, get_redis_status
 from app.routes import ab_test, auth, products, recommend
+from app.update_product_images import build_product_image_url
 
 logging.basicConfig(
     level=logging.INFO,
@@ -175,6 +176,17 @@ def _auto_seed_and_train():
             seed_path = os.path.join(os.path.dirname(__file__), "..", "seed_data.py")
             subprocess.run([sys.executable, seed_path], check=True)
             logger.info("Seed complete.")
+
+        db = SessionLocal()
+        try:
+            products_without_images = db.query(Product).filter(Product.image_url.is_(None)).all()
+            for product in products_without_images:
+                product.image_url = build_product_image_url(product.name)
+            if products_without_images:
+                db.commit()
+                logger.info("Backfilled images for %d products.", len(products_without_images))
+        finally:
+            db.close()
     except Exception as exc:
         logger.warning("Startup seed skipped: %s", exc)
 

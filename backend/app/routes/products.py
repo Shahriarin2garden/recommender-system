@@ -38,7 +38,7 @@ async def get_products(
     Results are cached in Redis for 5 minutes.
     """
     # Build cache key
-    cache_key = f"products:v2:skip={skip}:limit={limit}:category={category}"
+    cache_key = f"products:v3:skip={skip}:limit={limit}:category={category}"
     
     # Try cache first
     cached = cache_get(cache_key)
@@ -64,7 +64,7 @@ async def get_product(
 ):
     """Get detailed information about a specific product."""
     # Try cache first
-    cache_key = f"product:v2:{product_id}"
+    cache_key = f"product:v3:{product_id}"
     cached = cache_get(cache_key)
     if cached:
         return json.loads(cached)

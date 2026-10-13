@@ -22,7 +22,8 @@ export function RecommendationSection({ userId }: { userId: number }) {
         const fetchRecommendations = async () => {
             try {
                 const data = await apiClient.getRecommendations(userId)
-                setProducts(data as Product[])
+                const products = (data as any)?.recommendations?.map((rec: any) => rec.product) ?? []
+                setProducts(products as Product[])
             } catch (err: any) {
                 console.error('Failed to fetch recommendations:', err)
             } finally {
