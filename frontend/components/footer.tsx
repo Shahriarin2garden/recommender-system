@@ -27,7 +27,7 @@ export function Footer() {
             {/* Social icons */}
             <div className="flex items-center gap-4 pt-2">
               {[
-                { icon: Github,  href: '#', label: 'GitHub'  },
+                { icon: Github,  href: 'https://github.com/Shahriarin2garden/recommender-system', label: 'GitHub'  },
                 { icon: Twitter, href: '#', label: 'Twitter' },
                 { icon: Mail,    href: '#', label: 'Email'   },
               ].map(({ icon: Icon, href, label }) => (
@@ -35,6 +35,8 @@ export function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
+                  target={label === 'GitHub' ? '_blank' : undefined}
+                  rel={label === 'GitHub' ? 'noopener noreferrer' : undefined}
                   className="text-muted-foreground hover:text-foreground transition-colors duration-200"
                 >
                   <Icon className="h-4 w-4" />
