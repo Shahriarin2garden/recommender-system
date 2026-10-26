@@ -70,13 +70,15 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push backend image
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/recommender-backend:${{ github.sha }} ./backend
-          docker tag ghcr.io/${{ github.repository_owner }}/recommender-backend:${{ github.sha }} ghcr.io/${{ github.repository_owner }}/recommender-backend:latest
-          docker push ghcr.io/${{ github.repository_owner }}/recommender-backend:${{ github.sha }}
-          docker push ghcr.io/${{ github.repository_owner }}/recommender-backend:latest
+          OWNER_LC="${GITHUB_REPOSITORY_OWNER,,}"
+          docker build -t ghcr.io/${OWNER_LC}/recommender-backend:${GITHUB_SHA} ./backend
+          docker tag ghcr.io/${OWNER_LC}/recommender-backend:${GITHUB_SHA} ghcr.io/${OWNER_LC}/recommender-backend:latest
+          docker push ghcr.io/${OWNER_LC}/recommender-backend:${GITHUB_SHA}
+          docker push ghcr.io/${OWNER_LC}/recommender-backend:latest
       - name: Build and push frontend image
         run: |
-          docker build --build-arg NEXT_PUBLIC_API_URL=/api -t ghcr.io/${{ github.repository_owner }}/recommender-frontend:${{ github.sha }} ./frontend
-          docker tag ghcr.io/${{ github.repository_owner }}/recommender-frontend:${{ github.sha }} ghcr.io/${{ github.repository_owner }}/recommender-frontend:latest
-          docker push ghcr.io/${{ github.repository_owner }}/recommender-frontend:${{ github.sha }}
-          docker push ghcr.io/${{ github.repository_owner }}/recommender-frontend:latest
+          OWNER_LC="${GITHUB_REPOSITORY_OWNER,,}"
+          docker build --build-arg NEXT_PUBLIC_API_URL=/api -t ghcr.io/${OWNER_LC}/recommender-frontend:${GITHUB_SHA} ./frontend
+          docker tag ghcr.io/${OWNER_LC}/recommender-frontend:${GITHUB_SHA} ghcr.io/${OWNER_LC}/recommender-frontend:latest
+          docker push ghcr.io/${OWNER_LC}/recommender-frontend:${GITHUB_SHA}
+          docker push ghcr.io/${OWNER_LC}/recommender-frontend:latest
