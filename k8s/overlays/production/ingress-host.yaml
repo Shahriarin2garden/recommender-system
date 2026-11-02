@@ -1,0 +1,10 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: recommender
+  namespace: recommender
+spec:
+  tls:
+    - hosts:
+        - recommender.example.com
+      secretName: recommender-tls

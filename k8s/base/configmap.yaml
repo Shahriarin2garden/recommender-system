@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recommender-config
+  namespace: recommender
+data:
+  ENVIRONMENT: production
+  FRONTEND_URL: https://recommender.example.com
+  CORS_ORIGINS: https://recommender.example.com
+  ALLOW_SEED: "false"
+  COOKIE_SECURE: "true"
+  ROOT_PATH: /api
+  MODEL_PATH: /app/ml/models
+  NEXT_PUBLIC_API_URL: /api

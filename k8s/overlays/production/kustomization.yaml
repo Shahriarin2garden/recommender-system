@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: recommender
+
+resources:
+  - ../../base
+
+images:
+  - name: ghcr.io/example/recommender-backend
+    newName: ghcr.io/your-org/recommender-backend
+    newTag: "2026.10.26"
+  - name: ghcr.io/example/recommender-frontend
+    newName: ghcr.io/your-org/recommender-frontend
+    newTag: "2026.10.26"
+
+patches:
+  - path: ingress-host.yaml
