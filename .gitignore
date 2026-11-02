@@ -65,6 +65,17 @@ htmlcov/
 *.db
 *.sqlite3
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.plan
+plan.txt
+
+# TypeScript build metadata
+*.tsbuildinfo
+
 # OS
 .DS_Store
 Thumbs.db
