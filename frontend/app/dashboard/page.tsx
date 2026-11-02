@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { apiClient } from '@/lib/api-client'
 import { Skeleton } from '@/components/ui/skeleton'
-import axios from 'axios'
 
 interface UserProfile {
   id: number
@@ -31,11 +30,8 @@ export default function UserDashboard() {
         setProfile(user)
         
         // Fetch cohort variant info
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const cohortRes = await axios.get(`${API_BASE_URL}/api/v1/ab-test/user-cohort/${user.id}`, {
-          withCredentials: true
-        })
-        setCohortInfo(cohortRes.data)
+        const cohort = await apiClient.getUserCohort(user.id)
+        setCohortInfo(cohort)
       } catch (err: any) {
         console.error('Not logged in or error:', err)
         router.push('/login')
@@ -61,10 +57,7 @@ export default function UserDashboard() {
     if (!profile) return
     setAssigningCohort(true)
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      await axios.post(`${API_BASE_URL}/api/v1/ab-test/assign-cohort/${profile.id}?cohort=${variant}`, {}, {
-        withCredentials: true
-      })
+      await apiClient.assignCohort(profile.id, variant)
       setCohortInfo({ cohort: variant, variant })
     } catch (err) {
       console.error('Failed to assign cohort:', err)

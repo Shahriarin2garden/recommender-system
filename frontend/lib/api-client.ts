@@ -46,6 +46,27 @@ export const apiClient = {
     return response.json();
   },
 
+  getUserCohort: async (userId: number) => {
+    const response = await fetch(buildApiUrl(`/v1/ab-test/user-cohort/${userId}`), {
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user cohort: ${response.statusText}`);
+    }
+    return response.json();
+  },
+
+  assignCohort: async (userId: number, cohort: string) => {
+    const response = await fetch(buildApiUrl(`/v1/ab-test/assign-cohort/${userId}?cohort=${encodeURIComponent(cohort)}`), {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to assign cohort: ${response.statusText}`);
+    }
+    return response.json();
+  },
+
   login: async (email: string, password: string) => {
     const response = await fetch(buildApiUrl('/v1/auth/login'), {
       method: 'POST',
