@@ -1,0 +1,67 @@
+# =============================================================================
+# Terraform .gitignore
+# =============================================================================
+# What to commit vs. what to ignore:
+#
+#   COMMIT   : *.tf, *.tfvars.example, .terraform.lock.hcl
+#   IGNORE   : state, plans, real *.tfvars (secrets), provider cache, CLI config
+#
+# Lock the provider versions by committing .terraform.lock.hcl, but never commit
+# state files or variable files that contain secrets.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Provider / module cache (downloaded by `terraform init`, machine-specific)
+# -----------------------------------------------------------------------------
+**/.terraform/*
+.terraform.tfstate.lock.info
+
+# -----------------------------------------------------------------------------
+# State files (the source of truth — may contain secrets in plaintext)
+# -----------------------------------------------------------------------------
+*.tfstate
+*.tfstate.*
+terraform.tfstate.d/
+
+# -----------------------------------------------------------------------------
+# Crash logs
+# -----------------------------------------------------------------------------
+crash.log
+crash.*.log
+
+# -----------------------------------------------------------------------------
+# Variable files (frequently contain passwords, keys and other secrets)
+# Keep the checked-in template so others know what to configure.
+# -----------------------------------------------------------------------------
+*.tfvars
+*.tfvars.json
+*.auto.tfvars
+*.auto.tfvars.json
+!*.tfvars.example
+
+# -----------------------------------------------------------------------------
+# Saved plans (`terraform plan -out=...`)
+# -----------------------------------------------------------------------------
+*.tfplan
+*tfplan*
+*.plan
+
+# -----------------------------------------------------------------------------
+# Local override files (used to tweak resources without committing)
+# -----------------------------------------------------------------------------
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# -----------------------------------------------------------------------------
+# Backend / CLI configuration (may reference buckets, credentials, profiles)
+# -----------------------------------------------------------------------------
+.terraformrc
+terraform.rc
+*.backend.hcl
+
+# -----------------------------------------------------------------------------
+# Misc
+# -----------------------------------------------------------------------------
+.terraform.lock.hcl.bak

@@ -1,0 +1,33 @@
+# Copy to terraform.tfvars and adjust. Never commit real secrets.
+
+aws_region  = "us-east-1"
+project_name = "shop"
+environment  = "dev"
+
+# Networking
+vpc_cidr             = "10.0.0.0/16"
+availability_zone_count = 2
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24"]
+single_nat_gateway   = true
+
+# Database
+db_instance_class     = "db.t4g.micro"
+db_multi_az           = false
+db_deletion_protection = false
+
+# Cache
+cache_node_type = "cache.t4g.micro"
+cache_num_nodes = 1
+
+# Containers
+frontend_desired_count = 2
+backend_desired_count  = 2
+
+# Public facing
+frontend_url  = "http://localhost"
+cors_origins  = "http://localhost"
+# certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/xxxx"
+
+# Use 7-30 in production so accidental deletes are recoverable.
+secret_recovery_window_in_days = 0
