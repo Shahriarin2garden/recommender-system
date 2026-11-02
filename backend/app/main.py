@@ -5,7 +5,7 @@ import os
 import time
 from urllib.parse import urlparse
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -106,6 +106,21 @@ async def health_check():
         "version": "1.0.0",
         "timestamp": time.time(),
     }
+
+
+@app.get("/readyz", tags=["Health"])
+async def readiness_check():
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+    except Exception as exc:  # pragma: no cover - runtime dependency check
+        logger.warning("Readiness check failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database is unavailable",
+        ) from exc
+
+    return {"status": "ready", "redis": get_redis_status()}
 
 
 @app.get("/", tags=["Root"])

@@ -30,6 +30,12 @@ def test_product_list_and_auth_flow(client):
     assert me.status_code == 200
 
 
+def test_readiness_endpoint(client):
+    response = client.get('/readyz')
+    assert response.status_code == 200
+    assert response.json()['status'] == 'ready'
+
+
 def test_recommendations_without_model_are_fallback(client):
     user_id = 1
     response = client.get(f'/api/v1/recommend/{user_id}?top_n=5')
